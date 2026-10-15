@@ -92,3 +92,12 @@ print("Outer wheel angle:", delta_o_deg, "degrees")
 
 print("Turning radius:", R_check, "mm")
 print("Turning radius:", R_check / 1000, "m")
+
+
+"""
+Final output should inculde
+both inner and outer wheel angles
+angle difference
+ackerman percentage
+graph inner and outer angles vs rack displacement
+"""
