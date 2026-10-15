@@ -4,9 +4,10 @@ import math
 # INPUT PARAMETERS
 # =========================
 
-L = 1550          # Wheelbase [mm]
-t_f = 1200        # Front track width [mm]
-R_target = 4000   # Target turning radius [mm]
+wheel_width = 406.4             #Wheel width [mm]
+L = 1550                        # Wheelbase [mm]
+t_f = 1200 + wheel_width        # Front track width [mm]
+R_target = 4000                 # Target turning radius [mm]
 
 
 # =========================
