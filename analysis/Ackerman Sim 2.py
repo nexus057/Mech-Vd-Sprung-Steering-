@@ -1,0 +1,65 @@
+import math
+from dataclasses import dataclass
+
+# Suspension hardpoints, metres, vehicle coordinate system
+# Assumed convention: +X = front, +Y = left, +Z = up
+# "dist" = straight-line distance from the origin (your 4th column)
+
+hardpoints = {
+    # ---------------- FRONT LEFT (+X, +Y) ----------------
+    "FL_UCA_FRONT":         {"x":  0.805032, "y":  0.259336, "z": 0.272263, "dist": 0.8885149538},
+    "FL_UCA_REAR":          {"x":  0.705186, "y":  0.259336, "z": 0.266707, "dist": 0.7972923425},
+    "FL_UPPER_BALL_JOINT":  {"x":  0.755109, "y":  0.626708, "z": 0.26701,  "dist": 1.016979282},
+    "FL_LCA_FRONT":         {"x":  0.8135,   "y":  0.23,     "z": 0.16,     "dist": 0.8603965655},
+    "FL_LCA_REAR":          {"x":  0.7135,   "y":  0.23,     "z": 0.16,     "dist": 0.7665391379},
+    "FL_LOWER_BALL_JOINT":  {"x":  0.7635,   "y":  0.631188, "z": 0.14701,  "dist": 1.00147016},
+    "FL_TIE_INNER":         {"x":  0.79,     "y":  0.259336, "z": 0.12265,  "dist": 0.8404749749},
+    "FL_TIE_OUTER":         {"x":  0.79,     "y":  0.6421,   "z": 0.145,    "dist": 1.028308033},
+
+    # ---------------- FRONT RIGHT (+X, -Y) ----------------
+    "FR_UCA_FRONT":         {"x":  0.805032, "y": -0.259336, "z": 0.272263, "dist": 0.8885149538},
+    "FR_UCA_REAR":          {"x":  0.705186, "y": -0.259336, "z": 0.266707, "dist": 0.7972923425},
+    "FR_UPPER_BALL_JOINT":  {"x":  0.755109, "y": -0.626708, "z": 0.26701,  "dist": 1.016979282},
+    "FR_LCA_FRONT":         {"x":  0.8135,   "y": -0.23,     "z": 0.16,     "dist": 0.8603965655},
+    "FR_LCA_REAR":          {"x":  0.7135,   "y": -0.23,     "z": 0.16,     "dist": 0.7665391379},
+    "FR_LOWER_BALL_JOINT":  {"x":  0.7635,   "y": -0.631188, "z": 0.14701,  "dist": 1.00147016},
+    "FR_TIE_INNER":         {"x":  0.79,     "y": -0.259336, "z": 0.12265,  "dist": 0.8404749749},
+    "FR_TIE_OUTER":         {"x":  0.79,     "y": -0.6421,   "z": 0.145,    "dist": 1.028308033},
+
+    # ---------------- REAR LEFT (-X, +Y) ----------------
+    "RL_UCA_FRONT":         {"x": -0.715542, "y":  0.258292, "z": 0.267647, "dist": 0.8064428235},
+    "RL_UCA_REAR":          {"x": -0.815458, "y":  0.258292, "z": 0.2594,   "dist": 0.8938539405},
+    "RL_UPPER_BALL_JOINT":  {"x": -0.7655,   "y":  0.632043, "z": 0.26701,  "dist": 1.027989759},
+    "RL_LCA_FRONT":         {"x": -0.7135,   "y":  0.23,     "z": 0.16,     "dist": 0.7665391379},
+    "RL_LCA_REAR":          {"x": -0.8135,   "y":  0.23,     "z": 0.16,     "dist": 0.8603965655},
+    "RL_LOWER_BALL_JOINT":  {"x": -0.7635,   "y":  0.635061, "z": 0.14701,  "dist": 1.003915666},
+    "RL_TIE_INNER":         {"x": -0.79,     "y":  0.258292, "z": 0.215,    "dist": 0.8585101964},
+    "RL_TIE_OUTER":         {"x": -0.79,     "y":  0.632,    "z": 0.215,    "dist": 1.034286711},
+
+    # ---------------- REAR RIGHT (-X, -Y) ----------------
+    "RR_UCA_FRONT":         {"x": -0.715542, "y": -0.258292, "z": 0.267647, "dist": 0.8064428235},
+    "RR_UCA_REAR":          {"x": -0.815458, "y": -0.258292, "z": 0.2594,   "dist": 0.8938539405},
+    "RR_UPPER_BALL_JOINT":  {"x": -0.7655,   "y": -0.632043, "z": 0.26701,  "dist": 1.027989759},
+    "RR_LCA_FRONT":         {"x": -0.7135,   "y": -0.23,     "z": 0.16,     "dist": 0.7665391379},
+    "RR_LCA_REAR":          {"x": -0.8135,   "y": -0.23,     "z": 0.16,     "dist": 0.8603965655},
+    "RR_LOWER_BALL_JOINT":  {"x": -0.7635,   "y": -0.635061, "z": 0.14701,  "dist": 1.003915666},
+    "RR_TIE_INNER":         {"x": -0.79,     "y": -0.258292, "z": 0.215,    "dist": 0.8585101964},
+    "RR_TIE_OUTER":         {"x": -0.79,     "y": -0.632,    "z": 0.215,    "dist": 1.034286711},
+}
+
+
+@dataclass
+class Component:
+    name: str
+    x: float
+    y: float
+    z: float
+    dist: float
+
+Chassis = {name: Component(name=name, **params) for name, params in hardpoints.items()}
+
+wheelbase = 1.525
+wheelWidth = 0.4065
+frontTrackWidth = (Chassis["FL_UPPER_BALL_JOINT"].y - Chassis["FR_UPPER_BALL_JOINT"].y) + wheelWidth
+
+targetRadius = 4000
