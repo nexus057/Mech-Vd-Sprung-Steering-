@@ -16,6 +16,7 @@ class Steering(Chassis):
         delta_i_deg = math.degrees(delta_i)
         delta_o_deg = math.degrees(delta_o)
         return {"INNER WHEEL ANGLE": delta_i_deg, "OUTER WHEEL ANGLE": delta_o_deg}
+    
     def getRackTravel(self, wheel_angle):
         "Positive angle: left steer, negative angle: right steer"
         upper = self.hardpoints["FL_UPPER_BALL_JOINT"]
@@ -47,9 +48,45 @@ class Steering(Chassis):
         reachSquared = tieRodLength ** 2 - offsetX ** 2
         if reachSquared < 0:
             raise ValueError("Invalid hardpoints - the tie cannot reach the rack at this angle")
-
         sideSign = 1.0 if tieRodInnerPoint[1] >= tieRodOuterPoint[1] else -1.0
-        return outerY + sideSign * math.sqrt(reachSquared)
+        newRackY = outerY + sideSign * math.sqrt(reachSquared)
+        return newRackY
+    def getWheelAngleFromRackTravel(self, rackTravel, minAngle, maxAngle):
+
+        def error(angle):
+            return self.getRackTravel(angle) - rackTravel
+        low = minAngle
+        high = maxAngle
+        f_low = error(low)
+        f_high = error(high)
+        if f_low * f_high > 0:
+            raise ValueError("Rack travel outside of range")
+        for _ in range(len(self.hardpoints)):
+            mid = (low + high) / 2
+            f_mid = error(mid)
+            if abs(f_mid) < 1e-8:
+                return mid
+            if f_low * f_mid <= 0:
+                high = mid
+            else:
+                low = mid
+                f_low = f_mid
+
+        return (low + high) / 2
+    
+    def getAckermannPercentages(self, innerAngle, outerAngle):
+        inner = math.radians(abs(innerAngle))
+        outer = math.radians(abs(outerAngle))
+
+        if math.isclose(math.tan(inner), 0) or math.isclose(math.tan(outer), 0):
+            raise ValueError("Nonzero wheel angles needed")
+        T = self._frontAxleCenter
+        L = self._wheelbase
+        actual = 1 / math.tan(outer) - 1/ math.tan(inner)
+        ideal = T / L
+        return ideal / actual * 100
+    
+
 
 
 
